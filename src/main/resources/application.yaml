@@ -1,0 +1,18 @@
+server:
+  port: 8081 # El shipment-service usa el 8080, este usará el 8081
+
+spring:
+  application:
+    name: courier-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/courier_db?createDatabaseIfNotExist=true
+    username: root
+    password: Pio02112001
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
