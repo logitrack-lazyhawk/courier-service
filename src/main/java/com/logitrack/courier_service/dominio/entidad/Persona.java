@@ -1,4 +1,4 @@
-package com.logitrack.curier_service.dominio.entidad;
+package com.logitrack.courier_service.dominio.entidad;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

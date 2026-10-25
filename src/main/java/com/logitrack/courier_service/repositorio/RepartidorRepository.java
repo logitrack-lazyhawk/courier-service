@@ -1,7 +1,7 @@
-package com.logitrack.curier_service.repositorio;
+package com.logitrack.courier_service.repositorio;
 
-import com.logitrack.curier_service.dominio.entidad.Repartidor;
-import com.logitrack.curier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.dominio.entidad.Repartidor;
+import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

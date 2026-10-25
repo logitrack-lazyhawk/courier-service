@@ -1,4 +1,4 @@
-package com.logitrack.curier_service;
+package com.logitrack.courier_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

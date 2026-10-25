@@ -1,4 +1,4 @@
-package com.logitrack.curier_service;
+package com.logitrack.courier_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
