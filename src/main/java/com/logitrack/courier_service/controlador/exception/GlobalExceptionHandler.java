@@ -1,4 +1,4 @@
-package com.logitrack.curier_service.controlador.exception;
+package com.logitrack.courier_service.controlador.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

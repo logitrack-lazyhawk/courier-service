@@ -1,6 +1,6 @@
-package com.logitrack.curier_service.dominio.entidad;
+package com.logitrack.courier_service.dominio.entidad;
 
-import com.logitrack.curier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

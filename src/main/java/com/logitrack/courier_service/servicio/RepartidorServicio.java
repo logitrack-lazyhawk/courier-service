@@ -1,8 +1,8 @@
-package com.logitrack.curier_service.servicio;
+package com.logitrack.courier_service.servicio;
 
-import com.logitrack.curier_service.dominio.dto.RepartidorRequestDto;
-import com.logitrack.curier_service.dominio.dto.RepartidorResponseDto;
-import com.logitrack.curier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.dominio.dto.RepartidorRequestDto;
+import com.logitrack.courier_service.dominio.dto.RepartidorResponseDto;
+import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
 
 import java.util.List;
 import java.util.UUID;

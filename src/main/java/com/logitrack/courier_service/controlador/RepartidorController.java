@@ -1,9 +1,9 @@
-package com.logitrack.curier_service.controlador;
+package com.logitrack.courier_service.controlador;
 
-import com.logitrack.curier_service.dominio.dto.RepartidorRequestDto;
-import com.logitrack.curier_service.dominio.dto.RepartidorResponseDto;
-import com.logitrack.curier_service.dominio.enumerador.EstadoRepartidor;
-import com.logitrack.curier_service.servicio.RepartidorServicio;
+import com.logitrack.courier_service.dominio.dto.RepartidorRequestDto;
+import com.logitrack.courier_service.dominio.dto.RepartidorResponseDto;
+import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.servicio.RepartidorServicio;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,11 @@
-package com.logitrack.curier_service.servicio.impl;
+package com.logitrack.courier_service.servicio.impl;
 
-import com.logitrack.curier_service.dominio.dto.RepartidorRequestDto;
-import com.logitrack.curier_service.dominio.dto.RepartidorResponseDto;
-import com.logitrack.curier_service.dominio.entidad.Repartidor;
-import com.logitrack.curier_service.dominio.enumerador.EstadoRepartidor;
-import com.logitrack.curier_service.repositorio.RepartidorRepository;
-import com.logitrack.curier_service.servicio.RepartidorServicio;
+import com.logitrack.courier_service.dominio.dto.RepartidorRequestDto;
+import com.logitrack.courier_service.dominio.dto.RepartidorResponseDto;
+import com.logitrack.courier_service.dominio.entidad.Repartidor;
+import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.repositorio.RepartidorRepository;
+import com.logitrack.courier_service.servicio.RepartidorServicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
