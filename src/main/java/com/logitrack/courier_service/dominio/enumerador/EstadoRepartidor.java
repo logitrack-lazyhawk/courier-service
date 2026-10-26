@@ -1,4 +1,4 @@
-package com.logitrack.curier_service.dominio.enumerador;
+package com.logitrack.courier_service.dominio.enumerador;
 
 public enum EstadoRepartidor {
     ACTIVO,
