@@ -9,10 +9,10 @@ import com.logitrack.courier_service.servicio.RepartidorServicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,12 +49,12 @@ public class RepartidorServicioImpl implements RepartidorServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RepartidorResponseDto> listarRepartidores(EstadoRepartidor estado) {
-        List<Repartidor> lista = (estado != null)
-                ? repartidorRepository.findByEstado(estado)
-                : repartidorRepository.findAll();
+    public Page<RepartidorResponseDto> listarRepartidores(EstadoRepartidor estado, Pageable pageable) {
+        Page<Repartidor> pagina = (estado != null)
+                ? repartidorRepository.findByEstado(estado, pageable)
+                : repartidorRepository.findAll(pageable);
 
-        return lista.stream().map(this::mapearHaciaResponse).collect(Collectors.toList());
+        return pagina.map(this::mapearHaciaResponse);
     }
 
     @Override
@@ -113,5 +113,13 @@ public class RepartidorServicioImpl implements RepartidorServicio {
                 repartidor.getTipoVehiculo(),
                 repartidor.getEstado()
         );
+    }
+    @Override
+    @Transactional
+    public void eliminarRepartidor(UUID id) {
+        if (!repartidorRepository.existsById(id)) {
+            throw new IllegalArgumentException("Repartidor no encontrado con ID: " + id);
+        }
+        repartidorRepository.deleteById(id);
     }
 }
