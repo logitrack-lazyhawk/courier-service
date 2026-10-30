@@ -14,8 +14,8 @@ public record RepartidorResponseDto(
         UUID id,
         String nombre,
         String dni,
-        String telefono,
         String email,
+        String telefono,
         String tipoVehiculo,
         EstadoRepartidor estado
 ) {}
