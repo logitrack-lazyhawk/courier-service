@@ -31,7 +31,20 @@ import org.hibernate.annotations.SoftDeleteType;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Repartidor extends Persona {
+public class Repartidor extends EntidadAuditable {
+
+    @Column(name = "nombre", nullable = false, length = 100)
+    private String nombre;
+
+    @Column(name = "dni", nullable = false, length = 20)
+    private String dni;
+
+    // NUEVO CAMPO: El email ahora es parte de la clase base
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
+
+    @Column(name = "telefono", nullable = false, length = 30)
+    private String telefono;
 
     @Column(name = "tipo_vehiculo", nullable = false, length = 50)
     private String tipoVehiculo;
