@@ -1,11 +1,19 @@
 package com.logitrack.courier_service.dominio.dto;
 
 import com.logitrack.courier_service.dominio.enumerador.EstadoRepartidor;
+import com.logitrack.courier_service.dominio.util.NormalizadorUtil;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Objeto de transferencia utilizado para recibir la petición de registro o edición de un repartidor.
+ * Aplica limpieza previa en DNI y normalización de formato internacional E.164 desacopladas.
+ *
+ * @author Equipo LazyHawk
+ * @version 1.0.0
+ */
 public record RepartidorRequestDto(
         @NotBlank(message = "El nombre es obligatorio")
         @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
@@ -16,7 +24,6 @@ public record RepartidorRequestDto(
         @Pattern(regexp = "^\\d{7,8}$", message = "El DNI debe contener 7 u 8 dígitos numéricos (sin puntos ni espacios)")
         String dni,
 
-        // NUEVO CAMPO: Validación de formato de email
         @NotBlank(message = "El email es obligatorio")
         @Email(message = "El formato del email no es válido")
         @Size(max = 100, message = "El email no puede superar los 100 caracteres")
@@ -37,78 +44,17 @@ public record RepartidorRequestDto(
 ) {
     public RepartidorRequestDto {
         if (dni != null) {
-            dni = limpiarDni(dni);
+            dni = NormalizadorUtil.limpiarDni(dni);
         }
         if (telefono != null) {
-            telefono = normalizarTelefono(telefono);
+            telefono = NormalizadorUtil.normalizarTelefono(telefono);
         }
-        // Opcional: Normalizar el email a minúsculas para evitar duplicados lógicos
         if (email != null) {
             email = email.trim().toLowerCase();
         }
     }
 
-    // Constructor de conveniencia actualizado
     public RepartidorRequestDto(String nombre, String dni, String email, String telefono, String tipoVehiculo) {
         this(nombre, dni, email, telefono, tipoVehiculo, EstadoRepartidor.ACTIVO);
-    }
-
-    private static String limpiarDni(String raw) {
-        return raw.replaceAll("[.\\-\\s]", "").trim();
-    }
-
-    private static String normalizarTelefono(String raw) {
-        String limpio = raw.replaceAll("[.\\-\\s()]", "").trim();
-        if (limpio.isBlank()) {
-            return limpio;
-        }
-
-        boolean teniaSignoMas = limpio.startsWith("+");
-        if (teniaSignoMas) {
-            limpio = limpio.substring(1);
-        }
-
-        if (limpio.startsWith("54")) {
-            String resto = limpio.substring(2);
-            boolean tieneNueve = resto.startsWith("9");
-            if (tieneNueve) {
-                resto = resto.substring(1);
-            }
-            if (resto.startsWith("0")) {
-                resto = resto.substring(1);
-            }
-            resto = removerPrefijoQuince(resto);
-            return "+" + (tieneNueve ? "549" : "54") + resto;
-        }
-
-        if (limpio.startsWith("0")) {
-            limpio = limpio.substring(1);
-        }
-
-        limpio = removerPrefijoQuince(limpio);
-
-        if (limpio.matches("\\d{8,11}")) {
-            return "+54" + limpio;
-        }
-
-        return teniaSignoMas ? "+" + limpio : limpio;
-    }
-
-    private static String removerPrefijoQuince(String numero) {
-        if (numero == null) {
-            return null;
-        }
-        if (numero.length() == 12 && numero.matches("\\d+")) {
-            if (numero.startsWith("1115")) {
-                return "11" + numero.substring(4);
-            }
-            if ("15".equals(numero.substring(3, 5))) {
-                return numero.substring(0, 3) + numero.substring(5);
-            }
-            if ("15".equals(numero.substring(4, 6))) {
-                return numero.substring(0, 4) + numero.substring(6);
-            }
-        }
-        return numero;
     }
 }
