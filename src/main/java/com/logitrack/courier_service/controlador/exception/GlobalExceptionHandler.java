@@ -3,6 +3,7 @@ package com.logitrack.courier_service.controlador.exception;
 import com.logitrack.courier_service.dominio.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Hidden;
 import com.logitrack.courier_service.dominio.exception.RepartidorNoEncontradoException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
