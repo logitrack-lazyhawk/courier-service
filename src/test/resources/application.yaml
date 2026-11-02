@@ -4,8 +4,6 @@ spring:
   cloud:
     config:
       enabled: false
-    compatibility-verifier:
-      enabled: false
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
@@ -21,16 +19,12 @@ spring:
       mode: never
 
 
-app:
-  normalizacion:
-    telefono:
-      codigo-pais: "54"
-      prefijo-internacional: "+54"
-      prefijo-movil: "+549"
-      prefijo-interurbano: "0"
-      prefijo-movil-local: "15"
-      area-amba: "11"
-      prefijo-amba-con-quince: "1115"
-      regex-limpieza: "[.\\-\\s()]"
-    dni:
-      regex-limpieza: "[.\\-\\s]"
+eureka:
+  client:
+    enabled: false
+
+management:
+  tracing:
+    export:
+      zipkin:
+        enabled: false

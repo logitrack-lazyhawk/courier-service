@@ -2,7 +2,7 @@ package com.logitrack.courier_service.controlador.exception;
 
 import com.logitrack.courier_service.dominio.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.servlet.http.HttpServletRequest;
+import com.logitrack.courier_service.dominio.exception.RepartidorNoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -24,6 +24,16 @@ import java.util.Map;
 @RestControllerAdvice
 @Hidden
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RepartidorNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleRepartidorNoEncontrado(RepartidorNoEncontradoException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
 
     /**
      * Captura las excepciones de validación de Bean Validation (@Valid en DTOs).
