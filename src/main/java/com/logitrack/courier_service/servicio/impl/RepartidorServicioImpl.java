@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
+import com.logitrack.courier_service.dominio.exception.RepartidorNoEncontradoException;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +44,7 @@ public class RepartidorServicioImpl implements RepartidorServicio {
     @Transactional(readOnly = true)
     public RepartidorResponseDto obtenerPorId(UUID id) {
         Repartidor repartidor = repartidorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Repartidor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RepartidorNoEncontradoException("Repartidor no encontrado con ID: " + id));
         return mapearHaciaResponse(repartidor);
     }
 
@@ -61,7 +62,7 @@ public class RepartidorServicioImpl implements RepartidorServicio {
     @Transactional
     public RepartidorResponseDto actualizarRepartidor(UUID id, RepartidorRequestDto request) {
         Repartidor repartidor = repartidorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Repartidor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RepartidorNoEncontradoException("Repartidor no encontrado con ID: " + id));
 
         // Si cambia el DNI, validamos que no exista otro con ese DNI
         if (!repartidor.getDni().equals(request.dni()) && repartidorRepository.existsByDni(request.dni())) {
@@ -82,7 +83,7 @@ public class RepartidorServicioImpl implements RepartidorServicio {
     @Transactional
     public void cambiarEstado(UUID id, EstadoRepartidor nuevoEstado) {
         Repartidor repartidor = repartidorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Repartidor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RepartidorNoEncontradoException("Repartidor no encontrado con ID: " + id));
 
         repartidor.setEstado(nuevoEstado);
         repartidorRepository.save(repartidor);
@@ -93,7 +94,7 @@ public class RepartidorServicioImpl implements RepartidorServicio {
     public RepartidorResponseDto obtenerDisponibilidad(UUID id) {
         // En el Sprint 2, este endpoint será consumido por el shipment-service
         Repartidor repartidor = repartidorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Repartidor no encontrado con ID: " + id));
+                .orElseThrow(() -> new RepartidorNoEncontradoException("Repartidor no encontrado con ID: " + id));
 
         // Si está INACTIVO, lanzamos excepción para que el shipment-service sepa que no puede asignarlo
         if (repartidor.getEstado() == EstadoRepartidor.INACTIVO) {
@@ -118,7 +119,7 @@ public class RepartidorServicioImpl implements RepartidorServicio {
     @Transactional
     public void eliminarRepartidor(UUID id) {
         if (!repartidorRepository.existsById(id)) {
-            throw new IllegalArgumentException("Repartidor no encontrado con ID: " + id);
+            throw new RepartidorNoEncontradoException("Repartidor no encontrado con ID: " + id);
         }
         repartidorRepository.deleteById(id);
     }
