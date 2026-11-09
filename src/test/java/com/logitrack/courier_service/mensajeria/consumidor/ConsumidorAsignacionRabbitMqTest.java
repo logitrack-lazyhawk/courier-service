@@ -19,12 +19,16 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import com.logitrack.courier_service.mensajeria.publicador.PublicadorResultadoAsignacionRabbitMq;
 
 @ExtendWith(MockitoExtension.class)
 class ConsumidorAsignacionRabbitMqTest {
 
     @Mock
     private ProcesadorSolicitudAsignacion procesador;
+
+    @Mock
+    private PublicadorResultadoAsignacionRabbitMq publicador;
 
     @InjectMocks
     private ConsumidorAsignacionRabbitMq consumidor;
@@ -81,6 +85,7 @@ class ConsumidorAsignacionRabbitMqTest {
         assertDoesNotThrow(() -> consumidor.consumir(evento));
 
         verify(procesador).procesar(evento);
+        verify(publicador).publicar(resultado);
     }
 
     @Test
