@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Binding;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 class RabbitMqConfigTest {
 
     private final RabbitMqConfig config = new RabbitMqConfig();
@@ -48,6 +48,14 @@ class RabbitMqConfigTest {
         assertEquals(
                 "courier.assignment.*.v1",
                 binding.getRoutingKey()
+        );
+    }
+
+    @Test
+    void convertidorDebeUtilizarJackson() {
+        assertInstanceOf(
+                JacksonJsonMessageConverter.class,
+                config.rabbitMessageConverter()
         );
     }
 }
