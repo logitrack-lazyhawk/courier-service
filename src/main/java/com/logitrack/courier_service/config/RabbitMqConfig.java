@@ -1,4 +1,3 @@
-
 package com.logitrack.courier_service.config;
 
 import org.springframework.amqp.core.Binding;
@@ -12,31 +11,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/*
-    * Configuración de RabbitMQ para el servicio de Courier.
-    * @author: Equipo de LazyHawks
-    * @version: 1.0.0
- */
 @Configuration
 public class RabbitMqConfig {
+    public static final String EXCHANGE = "logitrack.assignment.events";
+    public static final String COLA_SOLICITUDES = "courier.assignment.requests.q";
+    public static final String COLA_RESULTADOS = "shipment.assignment.results.q";
+    public static final String RK_SOLICITUD = "shipment.assignment.requested.v1";
+    public static final String RK_CONFIRMADA = "courier.assignment.confirmed.v1";
+    public static final String RK_RECHAZADA = "courier.assignment.rejected.v1";
 
-    public static final String EXCHANGE =
-            "logitrack.assignment.events";
-
-    public static final String COLA_SOLICITUDES =
-            "courier.assignment.requests.q";
-
-    public static final String COLA_RESULTADOS =
-            "shipment.assignment.results.q";
-
-    public static final String RK_SOLICITUD =
-            "shipment.assignment.requested.v1";
-
-    public static final String RK_CONFIRMADA =
-            "courier.assignment.confirmed.v1";
-
-    public static final String RK_RECHAZADA =
-            "courier.assignment.rejected.v1";
+    public static final String DEAD_LETTER_EXCHANGE = "logitrack.assignment.dlx";
+    public static final String COLA_SOLICITUDES_DLQ = "courier.assignment.requests.dlq";
+    public static final String RK_SOLICITUD_FALLIDA = "courier.assignment.requests.dead";
 
     @Bean
     public TopicExchange exchangeAsignaciones() {
@@ -44,8 +30,21 @@ public class RabbitMqConfig {
     }
 
     @Bean
+    public TopicExchange exchangeDeadLetterAsignacion() {
+        return new TopicExchange(DEAD_LETTER_EXCHANGE, true, false);
+    }
+
+    @Bean
     public Queue colaSolicitudes() {
-        return QueueBuilder.durable(COLA_SOLICITUDES).build();
+        return QueueBuilder.durable(COLA_SOLICITUDES)
+                .deadLetterExchange(DEAD_LETTER_EXCHANGE)
+                .deadLetterRoutingKey(RK_SOLICITUD_FALLIDA)
+                .build();
+    }
+
+    @Bean
+    public Queue colaSolicitudesDlq() {
+        return QueueBuilder.durable(COLA_SOLICITUDES_DLQ).build();
     }
 
     @Bean
@@ -56,21 +55,22 @@ public class RabbitMqConfig {
     @Bean
     public Binding bindingSolicitudes(
             @Qualifier("colaSolicitudes") Queue cola,
-            TopicExchange exchange) {
-
-        return BindingBuilder.bind(cola)
-                .to(exchange)
-                .with(RK_SOLICITUD);
+            @Qualifier("exchangeAsignaciones") TopicExchange exchange) {
+        return BindingBuilder.bind(cola).to(exchange).with(RK_SOLICITUD);
     }
 
     @Bean
     public Binding bindingResultados(
             @Qualifier("colaResultados") Queue cola,
-            TopicExchange exchange) {
+            @Qualifier("exchangeAsignaciones") TopicExchange exchange) {
+        return BindingBuilder.bind(cola).to(exchange).with("courier.assignment.*.v1");
+    }
 
-        return BindingBuilder.bind(cola)
-                .to(exchange)
-                .with("courier.assignment.*.v1");
+    @Bean
+    public Binding bindingSolicitudesDlq(
+            @Qualifier("colaSolicitudesDlq") Queue cola,
+            @Qualifier("exchangeDeadLetterAsignacion") TopicExchange exchange) {
+        return BindingBuilder.bind(cola).to(exchange).with(RK_SOLICITUD_FALLIDA);
     }
 
     @Bean

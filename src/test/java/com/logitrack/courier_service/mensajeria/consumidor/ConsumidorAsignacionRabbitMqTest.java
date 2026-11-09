@@ -1,105 +1,66 @@
-
 package com.logitrack.courier_service.mensajeria.consumidor;
 
 import com.logitrack.courier_service.mensajeria.contrato.AsignacionResultadoV1;
 import com.logitrack.courier_service.mensajeria.contrato.AsignacionSolicitadaV1;
-import com.logitrack.courier_service.servicio.ProcesadorSolicitudAsignacion;
-
+import com.logitrack.courier_service.mensajeria.publicador.PublicadorResultadoAsignacionRabbitMq;
+import com.logitrack.courier_service.servicio.ProcesadorIdempotenteAsignacion;
+import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.logitrack.courier_service.mensajeria.publicador.PublicadorResultadoAsignacionRabbitMq;
 
 @ExtendWith(MockitoExtension.class)
 class ConsumidorAsignacionRabbitMqTest {
+    @Mock private ProcesadorIdempotenteAsignacion procesador;
+    @Mock private PublicadorResultadoAsignacionRabbitMq publicador;
+    @InjectMocks private ConsumidorAsignacionRabbitMq consumidor;
 
-    @Mock
-    private ProcesadorSolicitudAsignacion procesador;
-
-    @Mock
-    private PublicadorResultadoAsignacionRabbitMq publicador;
-
-    @InjectMocks
-    private ConsumidorAsignacionRabbitMq consumidor;
-
-    private AsignacionSolicitadaV1 crearEvento() {
-        return new AsignacionSolicitadaV1(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                1,
-                Instant.now(),
-                UUID.randomUUID(),
-                UUID.randomUUID()
-        );
+    private AsignacionSolicitadaV1 solicitud() {
+        return new AsignacionSolicitadaV1(UUID.randomUUID(), UUID.randomUUID(), 1,
+                Instant.now(), UUID.randomUUID(), UUID.randomUUID());
     }
 
-    private AsignacionResultadoV1 crearResultado(
-            AsignacionSolicitadaV1 evento,
-            boolean aceptada,
-            String motivo) {
-
-        return new AsignacionResultadoV1(
-                UUID.randomUUID(),
-                evento.solicitudId(),
-                1,
-                Instant.now(),
-                evento.envioId(),
-                evento.repartidorId(),
-                aceptada,
-                motivo
-        );
+    private AsignacionResultadoV1 resultado(AsignacionSolicitadaV1 s, boolean aceptada) {
+        return new AsignacionResultadoV1(UUID.randomUUID(), s.solicitudId(), 1,
+                Instant.now(), s.envioId(), s.repartidorId(), aceptada,
+                aceptada ? null : "Repartidor INACTIVO");
     }
 
     @Test
-    void debeProcesarSolicitudAceptada() {
-        var evento = crearEvento();
-        var resultado = crearResultado(evento, true, null);
-
-        when(procesador.procesar(evento)).thenReturn(resultado);
-
-        assertDoesNotThrow(() -> consumidor.consumir(evento));
-
-        verify(procesador).procesar(evento);
+    void debePublicarSolicitudAceptada() {
+        var s = solicitud(); var r = resultado(s, true);
+        when(procesador.procesar(s)).thenReturn(r);
+        consumidor.consumir(s);
+        verify(publicador).publicar(r);
     }
 
     @Test
-    void debeProcesarSolicitudRechazada() {
-        var evento = crearEvento();
-        var resultado = crearResultado(
-                evento, false, "Repartidor INACTIVO"
-        );
-
-        when(procesador.procesar(evento)).thenReturn(resultado);
-
-        assertDoesNotThrow(() -> consumidor.consumir(evento));
-
-        verify(procesador).procesar(evento);
-        verify(publicador).publicar(resultado);
+    void debePublicarSolicitudRechazada() {
+        var s = solicitud(); var r = resultado(s, false);
+        when(procesador.procesar(s)).thenReturn(r);
+        consumidor.consumir(s);
+        verify(publicador).publicar(r);
     }
 
     @Test
     void debeRechazarEventoInvalidoSinReencolar() {
-        var evento = crearEvento();
+        var s = solicitud();
+        when(procesador.procesar(s)).thenThrow(new IllegalArgumentException("Evento inválido"));
+        assertThrows(AmqpRejectAndDontRequeueException.class, () -> consumidor.consumir(s));
+        verifyNoInteractions(publicador);
+    }
 
-        when(procesador.procesar(evento))
-                .thenThrow(new IllegalArgumentException(
-                        "Evento inválido"
-                ));
-
-        assertThrows(
-                AmqpRejectAndDontRequeueException.class,
-                () -> consumidor.consumir(evento)
-        );
+    @Test
+    void falloTemporalDebePropagarseParaReintento() {
+        var s = solicitud(); var r = resultado(s, true);
+        when(procesador.procesar(s)).thenReturn(r);
+        doThrow(new IllegalStateException("Rabbit sin conexión")).when(publicador).publicar(r);
+        assertThrows(IllegalStateException.class, () -> consumidor.consumir(s));
     }
 }
