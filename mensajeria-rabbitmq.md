@@ -48,4 +48,29 @@ Las pruebas automatizadas comprueban la configuración de los recursos de mensaj
 ## Alcance
 Esta feature establece la infraestructura y los contratos. La publicación, el consumo de eventos y los mecanismos de recuperación se implementarán en las features posteriores del Sprint 4.
 
-## Capturas 
+## F10 — Consumo de eventos de asignación
+
+Courier consume eventos `AsignacionSolicitadaV1` desde RabbitMQ
+mediante la cola `courier.assignment.requests.q`.
+
+### Componentes
+- ConsumidorAsignacionRabbitMq: recibe los eventos.
+- ProcesadorSolicitudAsignacion: valida la solicitud.
+- RepartidorServicio: consulta la disponibilidad del repartidor.
+
+### Reglas de negocio
+- Repartidor ACTIVO: solicitud aceptada.
+- Repartidor INACTIVO: solicitud rechazada.
+- Repartidor inexistente: solicitud rechazada.
+- Evento inválido: error de procesamiento.
+
+El procesamiento genera un AsignacionResultadoV1.
+
+### Pruebas
+- 29 pruebas automatizadas exitosas.
+- Prueba de integración con RabbitMQ exitosa.
+- Conversión JSON y recepción real verificadas.
+
+### Pendiente
+La publicación del resultado hacia Shipment corresponde a F11.
+Los reintentos, DLQ e idempotencia corresponden a F12.
