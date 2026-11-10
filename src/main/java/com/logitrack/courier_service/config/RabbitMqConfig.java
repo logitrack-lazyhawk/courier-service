@@ -73,8 +73,12 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(cola).to(exchange).with(RK_SOLICITUD_FALLIDA);
     }
 
+
     @Bean
     public MessageConverter rabbitMessageConverter() {
-        return new JacksonJsonMessageConverter();
+        return new JacksonJsonMessageConverter(
+                "com.logitrack.courier_service.mensajeria.contrato"
+        );
     }
+
 }
