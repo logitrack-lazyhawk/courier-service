@@ -74,3 +74,69 @@ El procesamiento genera un AsignacionResultadoV1.
 ### Pendiente
 La publicación del resultado hacia Shipment corresponde a F11.
 Los reintentos, DLQ e idempotencia corresponden a F12.
+
+## F36 — Pruebas de contratos y consistencia de eventos
+
+Se incorporaron pruebas para validar el intercambio de eventos V1 entre Shipment y Courier y su comportamiento frente a entregas duplicadas y mensajes inválidos.
+
+### Cobertura
+
+- **Contratos:** serialización y deserialización de `AsignacionSolicitadaV1` y `AsignacionResultadoV1`.
+- **Idempotencia:** una misma `solicitudId` genera una única decisión persistida, aun cuando se reciba más de una vez.
+- **DLQ:** un evento con versión incompatible se rechaza y RabbitMQ lo dirige a la cola de mensajes fallidos.
+- **Durabilidad:** se comprueba la persistencia de un mensaje después del reinicio real del broker.
+
+### Estrategia de pruebas
+
+Las pruebas unitarias utilizan JUnit y Mockito. Las pruebas de integración utilizan H2 y una única instancia de RabbitMQ, evitando desplegar todo el ecosistema.
+
+La prueba de reinicio utiliza una cola durable aislada y un mensaje persistente.
+
+### Limitaciones
+
+La estrategia garantiza procesamiento idempotente de solicitudes, pero no implica entrega exactamente una vez (*exactly-once delivery*).
+
+La prueba de reinicio comprueba la persistencia en el broker, sin demostrar por sí sola la recuperación completa del flujo distribuido.
+
+### Evidencia
+
+Agregar los resultados de ejecución de Maven, recepción en DLQ y recuperación del mensaje tras reiniciar RabbitMQ. Registrar los casos como exitosos únicamente después de verificarlos.
+
+t1@mx:~/Desktop/DAAS/logitrack-infra
+$
+curl -fsS \
+-u "$RABBITMQ_USER:$RABBITMQ_PASSWORD" \
+-H "Content-Type: application/json" \
+-X POST \
+http://127.0.0.1:15673/api/exchanges/%2F/amq.default/publish \
+-d '{"properties":{"delivery_mode":2},"routing_key":"f36.restart.q","payload":"F36-reinicio-broker","payload_encoding":"string"}'
+{"routed":true}t1@mx:~/Desktop/DAAS/logitrack-infra
+$
+docker compose restart rabbitmq
+docker compose ps rabbitmq
+[+] Restarting 1/1
+✔ Container logitrack-rabbitmq  Started                                                                                                                                       0.9s
+NAME                 IMAGE                              COMMAND                  SERVICE    CREATED       STATUS                                     PORTS
+logitrack-rabbitmq   rabbitmq:4.4.0-management-alpine   "docker-entrypoint.s…"   rabbitmq   4 hours ago   Up Less than a second (health: starting)   4369/tcp, 5671/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 127.0.0.1:5673->5672/tcp, 127.0.0.1:15673->15672/tcp
+t1@mx:~/Desktop/DAAS/logitrack-infra
+$
+curl --retry 15 --retry-delay 2 --retry-connrefused -fsS \
+-u "$RABBITMQ_USER:$RABBITMQ_PASSWORD" \
+-H "Content-Type: application/json" \
+-X POST \
+http://127.0.0.1:15673/api/queues/%2F/f36.restart.q/get \
+-d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}'
+[{"payload_bytes":19,"redelivered":false,"exchange":"","routing_key":"f36.restart.q","message_count":0,"properties":{"delivery_mode":2},"payload":"F36-reinicio-broker","payload_encoding":"string"}]t1@mx:~/Desktop/DAAS/logitrack-infra
+
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.63 s -- in com.logitrack.courier_service.mensajeria.consumidor.RabbitMqConsumoIT
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  18.112 s
+[INFO] Finished at: 2026-11-10T15:36:24-03:00
+[INFO] ------------------------------------------------------------------------
